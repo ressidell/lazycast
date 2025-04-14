@@ -181,6 +181,16 @@ cpustr = cpuinfo.read()
 runonpi = 'BCM2835' in cpustr or 'BCM2711' in cpustr
 cpuinfo.close()
 
+if runonpi and not os.path.exists('edid.txt'):
+	os.system('tvservice -d edid.txt')
+
+edidlen = 0
+if os.path.exists('edid.txt'):
+	edidfile = open('edid.txt','rb')
+	edidbytes = edidfile.read()
+	edidfile.close()
+	edidlen = len(edidbytes)
+
 idrsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 idrsock_address = ('127.0.0.1', 0)
 idrsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -231,15 +241,8 @@ msg = msg +'wfd_3d_video_formats: none\r\n'\
 
 
 if runonpi:
-	os.system('tvservice -d edid.txt')
 	os.system('pkill lxpanel')
 
-edidlen = 0
-if os.path.exists('edid.txt') and True:
-	edidfile = open('edid.txt','rb')
-	edidbytes = edidfile.read()
-	edidfile.close()
-	edidlen = len(edidbytes)
 
 if 'wfd_display_edid' in data and edidlen != 0:
 	msg = msg + 'wfd_display_edid: ' + '{:04X}'.format(int(edidlen/256 + 1)) + ' ' + str(edidbytes.hex())+'\r\n'
@@ -256,10 +259,12 @@ if 'intel_sink_manufacturer_name' in data:
 if 'intel_sink_model_name' in data:
 	msg = msg + 'intel_sink_model_name: lazycast\r\n'
 if 'intel_sink_version' in data:
-	msg = msg + 'intel_sink_version: 20.4.26\r\n'
+	msg = msg + 'intel_sink_version: 25.4.13\r\n'
 if 'intel_sink_device_URL' in data:
-	msg = msg + 'intel_sink_device_URL: https://github.com/homeworkc/lazycast\r\n'
-
+	msg = msg + 'intel_sink_device_URL: none\r\n'
+	
+if 'wfd_idr_request_capability' in data:
+	msg = msg + 'wfd_idr_request_capability: 1\r\n'
 
 
 
