@@ -408,7 +408,7 @@ OMX_ERRORTYPE set_video_decoder_input_format(COMPONENT_T *component)
 
 int setup_demuxer(const char *filename) {
     // Register all formats and codecs
-    av_register_all();
+    //av_register_all();
     if(avformat_open_input(&pFormatCtx, filename, NULL, NULL)!=0) {
 	fprintf(stderr, "Can't get format\n");
         return -1; // Couldn't open file
@@ -1060,6 +1060,7 @@ static void* addnullpacket()
 }
 
 
+
 int main(int argc, char** argv) 
 {
 	char *audiorenderComponentName;
@@ -1209,7 +1210,7 @@ int main(int argc, char** argv)
 				printf("No portr settting seen yet\n");
 			}
 		}
-		av_free_packet(&orig_pkt);
+		av_packet_unref(&orig_pkt);
 	}
 	while(1)
 	{
@@ -1356,17 +1357,25 @@ int main(int argc, char** argv)
 			{
 				
 				int got_frame;
-
+				/*
 				if (((err = avcodec_decode_audio4(codec_context, frame, &got_frame, &renderpkt)) < 0) ||
 					!got_frame)
 					continue;//"Error decoding 
-
+				*/
+				err = avcodec_send_packet(codec_context, &renderpkt);
+				if (err < 0 && err != AVERROR(EAGAIN))
+				    continue;
+				
+				err = avcodec_receive_frame(codec_context, frame);
+				if (err < 0)  // includes EAGAIN and EOF → no frame available
+				    continue;
+				
 				read_audio_into_buffer_and_empty(frame, audiorenderComponent);
 
 
 			}
 			
-			av_free_packet(&renderpkt);
+			av_packet_unref(&renderpkt);
 			Nodetype* pnext = oldnode->next;
 			free(oldnode);
 
@@ -1390,7 +1399,7 @@ int main(int argc, char** argv)
 			}
 			AVPacket renderpkt = *(oldnode->pbuff);
 
-			av_free_packet(&renderpkt);
+			av_packet_unref(&renderpkt);
 			Nodetype* pnext = oldnode->next;
 			free(oldnode);
 
