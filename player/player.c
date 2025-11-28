@@ -427,12 +427,12 @@ int setup_demuxer(const char *filename) {
 		video_stream_idx = ret;
 
 		video_stream = pFormatCtx->streams[video_stream_idx];
-		video_dec_ctx = video_stream->codec;
+		video_dec_ctx = video_stream->codecpar;
 
-		img_width         = video_stream->codec->width;
-		img_height        = video_stream->codec->height;
-		extradata         = video_stream->codec->extradata;
-		extradatasize     = video_stream->codec->extradata_size;
+		img_width         = video_stream->codecpar->width;
+		img_height        = video_stream->codecpar->height;
+		extradata         = video_stream->codecpar->extradata;
+		extradatasize     = video_stream->codecpar->extradata_size;
 		fpsscale          = video_stream->r_frame_rate.den;
 		fpsrate           = video_stream->r_frame_rate.num;
 		time_base_num         = video_stream->time_base.num;
@@ -444,7 +444,7 @@ int setup_demuxer(const char *filename) {
 			   video_stream->time_base.num,
 			   video_stream->time_base.den);
 
-		AVCodec *codec = avcodec_find_decoder(video_stream->codec->codec_id);
+		AVCodec *codec = avcodec_find_decoder(video_stream->codecpar->codec_id);
 	
 		if (codec) 
 		{
@@ -457,10 +457,10 @@ int setup_demuxer(const char *filename) {
 		audio_stream_idx = ret;
 
 		audio_stream = pFormatCtx->streams[audio_stream_idx];
-		audio_dec_ctx = audio_stream->codec;
+		audio_dec_ctx = audio_stream->codecpar;
 
 
-		AVCodec *codec = avcodec_find_decoder(audio_stream->codec->codec_id);
+		AVCodec *codec = avcodec_find_decoder(audio_stream->codecpar->codec_id);
 		codec_context = avcodec_alloc_context3(codec);
 		if (codec)
 		{
@@ -478,7 +478,7 @@ int setup_demuxer(const char *filename) {
 		audio_stream_idx = 1;
 
 		audio_stream = pFormatCtx->streams[audio_stream_idx];
-		audio_dec_ctx = audio_stream->codec;
+		audio_dec_ctx = audio_stream->codecpar;
 
 
 		AVCodec *codec = avcodec_find_decoder(AV_CODEC_ID_AAC);
